@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Funebra EYE2716 — Visual Consciousness Matrix</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#05070b" />
+
+<style>
+:root{
+  --bg:#05070b;
+  --fg:#e8f4ff;
+  --muted:#7a8699;
+  --accent:#0ff0b7;
+}
+
+*{box-sizing:border-box;}
+
+body{
+  margin:0;
+  padding:20px;
+  background:radial-gradient(circle at center,#0b1324 0,#05070b 60%,#000 100%);
+  color:var(--fg);
+  font-family:system-ui, sans-serif;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:16px;
+}
+
+h1{
+  margin:0;
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+  font-size:1.6rem;
+}
+
+.subtitle{
+  font-size:0.85rem;
+  color:var(--muted);
+  text-align:center;
+  max-width:640px;
+}
+
+.panel{
+  width:100%;
+  max-width:980px;
+  background:rgba(5,8,15,0.92);
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,0.06);
+  padding:16px;
+  box-shadow:0 18px 35px rgba(0,0,0,0.6);
+}
+
+.controls{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  align-items:center;
+  font-size:0.85rem;
+}
+
+button{
+  border:none;
+  border-radius:999px;
+  padding:6px 14px;
+  background:linear-gradient(135deg,#0ff0b7,#55f5ff);
+  color:#020308;
+  font-weight:700;
+  letter-spacing:0.06em;
+  cursor:pointer;
+}
+
+.status{
+  margin-top:8px;
+  font-size:0.8rem;
+  color:var(--muted);
+}
+
+/* ---- MATRIX ---- */
+
+.eye-wrap{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  align-items:center;
+}
+
+.eye{
+  width:min(900px,100%);
+  aspect-ratio:1/1;
+  display:grid;
+  grid-template-columns:repeat(52,1fr);
+  grid-template-rows:repeat(52,1fr);
+  background:radial-gradient(circle at center,#02050d 0,#000 70%);
+  border-radius:22px;
+  border:1px solid rgba(255,255,255,0.08);
+  overflow:hidden;
+}
+
+.bn{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  opacity:0.12;
+  transition:opacity 80ms linear, transform 80ms linear;
+}
+
+.bn-dot{
+  width:60%;
+  height:60%;
+  border-radius:50%;
+  background:#0ff0b7;
+  transition:inherit;
+}
+
+/* ---- HUD ---- */
+
+.hud{
+  display:flex;
+  gap:16px;
+  flex-wrap:wrap;
+  font-size:0.8rem;
+  color:var(--muted);
+}
+</style>
+</head>
+
+<body>
+<h1>Funebra EYE2716</h1>
+<div class="subtitle">
+52 × 52 = 2716 bn-points · Visual perception as a living field<br>
+Motion · Focus · Awareness · Geometry
+</div>
+
+<div class="panel">
+  <div class="controls">
+    <button id="runBtn">Activate Eye</button>
+    <button id="pauseBtn" disabled>Pause</button>
+  </div>
+  <div class="status" id="status">
+    EYE2716 idle. Awaiting perception.
+  </div>
+</div>
+
+<div class="panel">
+  <div class="eye-wrap">
+    <div id="eye" class="eye"></div>
+    <div class="hud" id="hud">
+      Focus: 0.00 · Motion: 0.00 · Awareness: 0.00
+    </div>
+  </div>
+</div>
+
+<script>
+const SIZE = 52;
+const TOTAL = SIZE * SIZE;
+const eye = document.getElementById("eye");
+const hud = document.getElementById("hud");
+const statusEl = document.getElementById("status");
+
+let running=false;
+let t=0;
+let raf=null;
+const bn=[];
+
+/* ---- build bn-points ---- */
+(function init(){
+  for(let i=0;i<TOTAL;i++){
+    const d=document.createElement("div");
+    d.className="bn";
+    d.id="bn"+i;
+
+    const dot=document.createElement("div");
+    dot.className="bn-dot";
+    d.appendChild(dot);
+
+    eye.appendChild(d);
+    bn.push({cell:d,dot});
+  }
+})();
+
+/* ---- perception model ---- */
+function perception(x,y,time){
+  const cx=SIZE/2, cy=SIZE/2;
+  const dx=x-cx, dy=y-cy;
+  const dist=Math.sqrt(dx*dx+dy*dy)/(SIZE/2);
+
+  const wave=Math.sin(dist*8 - time*2);
+  const pulse=Math.sin(time + dist*6);
+
+  const focus=Math.max(0,1-dist);
+  const intensity=0.4*wave + 0.6*pulse*focus;
+
+  return Math.max(0,intensity);
+}
+
+/* ---- render ---- */
+function frame(){
+  t+=0.016;
+  let sum=0, motion=0;
+
+  for(let y=0;y<SIZE;y++){
+    for(let x=0;x<SIZE;x++){
+      const i=y*SIZE+x;
+      const v=perception(x,y,t);
+      sum+=v;
+      motion+=Math.abs(v - (bn[i].v||0));
+
+      bn[i].v=v;
+      bn[i].cell.style.opacity=0.08+v*0.9;
+      bn[i].dot.style.transform=`scale(${0.4+v})`;
+      bn[i].dot.style.backgroundColor=
+        `hsl(${160+v*80},70%,${35+v*35}%)`;
+    }
+  }
+
+  const awareness=sum/TOTAL;
+  hud.textContent=
+    `Focus: ${(1-awareness).toFixed(2)} · Motion: ${(motion/TOTAL).toFixed(2)} · Awareness: ${awareness.toFixed(2)}`;
+
+  raf=requestAnimationFrame(frame);
+}
+
+/* ---- controls ---- */
+document.getElementById("runBtn").onclick=()=>{
+  if(running) return;
+  running=true;
+  statusEl.textContent="EYE2716 active. Observing geometry.";
+  document.getElementById("pauseBtn").disabled=false;
+  frame();
+};
+
+document.getElementById("pauseBtn").onclick=()=>{
+  running=false;
+  cancelAnimationFrame(raf);
+  statusEl.textContent="EYE2716 paused.";
+};
+</script>
+</body>
+</html>
