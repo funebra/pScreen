@@ -1,1 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Funebra™ pScreen — Eye Demo (bn-field)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="theme-color" content="#06080b" />
+<meta name="color-scheme" content="dark" />
+<style>
+  :root{
+    --bg:#06080b;
+    --panel:#0b0f15;
+    --ink:#e8eef6;
+    --muted:#93a4b8;
+    --line:rgba(255,255,255,.10);
+    --accent:#15b6ff;
+    --good:#46ff9a;
+    --warn:#ffd166;
+    --bad:#ff4d6d;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    padding:18px;
+    background:
+      radial-gradient(1200px 700px at 30% 0%, rgba(21,182,255,.18), transparent 55%),
+      radial-gradient(900px 600px at 70% 100%, rgba(70,255,154,.12), transparent 55%),
+      var(--bg);
+    color:var(--ink);
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+    min-height:100vh;
+  }
+  header{
+    padding:14px 16px;
+    border:1px solid var(--line);
+    border-radius:18px;
+    background:rgba(11,15,21,.78);
+    box-shadow:0 14px 40px rgba(0,0,0,.35);
+  }
+  .topline{
+    display:flex;
+    gap:12px;
+    align-items:baseline;
+    flex-wrap:wrap;
+    justify-content:space-between;
+  }
+  h1{
+    margin:0;
+    font-size:16px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+  }
+  .tag{color:var(--muted);font-size:13px}
+  .layout{
+    display:grid;
+    grid-template-columns: 1.05fr .95fr;
+    gap:14px;
+    width:min(1280px,100%);
+    margin:0 auto;
+    flex:1;
+  }
+  @media (max-width: 1020px){ .layout{grid-template-columns:1fr} }
+  .card{
+    background:rgba(11,15,21,.82);
+    border:1px solid var(--line);
+    border-radius:18px;
+    overflow:hidden;
+    box-shadow:0 14px 40px rgba(0,0,0,.35);
+  }
+  .hd{
+    padding:12px 14px;
+    border-bottom:1px solid var(--line);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+  }
+  .hd b{letter-spacing:.04em}
+  .bd{padding:14px}
+  .pill{
+    border:1px solid var(--line);
+    border-radius:999px;
+    padding:6px 10px;
+    background:rgba(255,255,255,.04);
+    color:var(--muted);
+    font-size:12px;
+    display:inline-flex;
+    gap:8px;
+    align-items:center;
+  }
+
+  /* pScreen grid (pure DOM) */
+  #screen{
+    --cols: 32;
+    --rows: 18;
+    --cell: 18px;
+    display:grid;
+    grid-template-columns:repeat(var(--cols), var(--cell));
+    grid-template-rows:repeat(var(--rows), var(--cell));
+    gap:2px;
+    padding:12px;
+    border-radius:18px;
+    border:1px solid var(--line);
+    background:rgba(0,0,0,.35);
+    user-select:none;
+    touch-action:none;
+    place-content:center;
+    overflow:auto;
+  }
+  .px{
+    width:var(--cell);
+    height:var(--cell);
+    border-radius:6px;
+    background:rgba(255,255,255,.03);
+    border:1px solid rgba(255,255,255,.06);
+    position:relative;
+  }
+  .px.on{
+    background:rgba(21,182,255,.22);
+    border-color:rgba(21,182,255,.42);
+    box-shadow: inset 0 0 0 1px rgba(21,182,255,.25);
+  }
+  .px.on::after{
+    content:"";
+    position:absolute;
+    inset:3px;
+    border-radius:5px;
+    background:rgba(21,182,255,.35);
+  }
+
+  .controls{
+    display:grid;
+    grid-template-columns: repeat(2, minmax(0,1fr));
+    gap:10px;
+  }
+  .row{
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:10px;
+    background:rgba(255,255,255,.03);
+  }
+  .row label{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    font-size:12px;
+    color:var(--muted);
+    margin-bottom:6px;
+  }
+  input[type="range"]{width:100%}
+  select{
+    width:100%;
+    border-radius:12px;
+    border:1px solid var(--line);
+    background:rgba(0,0,0,.25);
+    color:var(--ink);
+    padding:8px 10px;
+    outline:none;
+  }
+  .btnbar{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-top:12px;
+  }
+  button{
+    border:none;
+    border-radius:999px;
+    padding:10px 14px;
+    font-weight:800;
+    cursor:pointer;
+    color:#041015;
+    background:var(--accent);
+    box-shadow:0 10px 22px rgba(21,182,255,.25);
+  }
+  button.secondary{
+    background:rgba(255,255,255,.08);
+    color:var(--ink);
+    border:1px solid var(--line);
+    box-shadow:none;
+    font-weight:700;
+  }
+  button.danger{
+    background:var(--bad);
+    color:#16050a;
+  }
+
+  .stats{
+    display:grid;
+    grid-template-columns: repeat(2, minmax(0,1fr));
+    gap:10px;
+    margin-top:12px;
+  }
+  .stat{
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:10px;
+    background:rgba(255,255,255,.03);
+  }
+  .stat .k{color:var(--muted);font-size:12px}
+  .stat .v{font-size:18px;font-weight:900;margin-top:2px}
+  pre{
+    margin:0;
+    padding:10px;
+    border-radius:14px;
+    border:1px solid var(--line);
+    background:rgba(0,0,0,.35);
+    overflow:auto;
+    max-height:240px;
+    font-size:12px;
+    color:#dbe7f6;
+    margin-top:12px;
+  }
+
+  /* Eye view */
+  .eyeWrap{
+    display:grid;
+    grid-template-columns: 1fr;
+    gap:12px;
+  }
+  .eyeStage{
+    border:1px solid var(--line);
+    border-radius:18px;
+    background:radial-gradient(circle at center, rgba(21,182,255,.12), rgba(0,0,0,.35) 55%, rgba(0,0,0,.55));
+    overflow:hidden;
+    position:relative;
+    aspect-ratio: 1 / 1;
+    width:min(520px, 100%);
+    margin:0 auto;
+  }
+  .eyeStage svg{width:100%;height:100%;display:block}
+  .eyeHint{
+    color:var(--muted);
+    font-size:12px;
+    line-height:1.4;
+  }
+  .mini{
+    display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between
+  }
+  .toggle{
+    display:inline-flex;
+    border:1px solid var(--line);
+    border-radius:999px;
+    overflow:hidden;
+  }
+  .toggle button{
+    background:transparent;
+    color:var(--muted);
+    border:none;
+    box-shadow:none;
+    padding:8px 12px;
+    font-weight:800;
+  }
+  .toggle button.active{
+    background:rgba(255,255,255,.08);
+    color:var(--ink);
+  }
+
+  footer{
+    text-align:center;
+    color:var(--muted);
+    font-size:12px;
+    padding:10px 0 2px;
+  }
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="topline">
+    <div>
+      <h1>Funebra™ pScreen — Eye Demo</h1>
+      <div class="tag">Pure DOM grid → scan → bn-points → Eye-field visualization</div>
+    </div>
+    <span class="pill">mode: <b style="color:var(--ink)">eye</b></span>
+  </div>
+</header>
+
+<main class="layout">
+  <!-- LEFT: Grid surface -->
+  <section class="card">
+    <div class="hd">
+      <b>pScreen Surface</b>
+      <div class="mini">
+        <span class="pill" id="modePill">Mode: Paint</span>
+        <span class="pill" id="coordPill">x: — y: —</span>
+        <span class="pill" id="densityPill">Density: —%</span>
+      </div>
+    </div>
+    <div class="bd">
+      <div id="screen" aria-label="pScreen pixel grid"></div>
+
+      <div class="mini" style="margin-top:10px">
+        <span class="pill">Tip: drag paint • Shift erase • Ctrl invert</span>
+        <span class="pill">Eye view updates on Scan</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- RIGHT: Eye view + controls -->
+  <aside class="card">
+    <div class="hd">
+      <b>Eye Field</b>
+      <span class="pill">bn → normalize → radar</span>
+    </div>
+    <div class="bd">
+      <div class="eyeWrap">
+        <div class="eyeStage">
+          <svg id="eyeSvg" viewBox="-60 -60 120 120" aria-label="Eye field">
+            <!-- rings -->
+            <circle r="52" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="1"/>
+            <circle r="35" fill="none" stroke="rgba(255,255,255,.06)" stroke-width="1"/>
+            <circle r="18" fill="none" stroke="rgba(255,255,255,.05)" stroke-width="1"/>
+            <!-- crosshair -->
+            <line x1="-52" y1="0" x2="52" y2="0" stroke="rgba(255,255,255,.10)" stroke-width="1"/>
+            <line x1="0" y1="-52" x2="0" y2="52" stroke="rgba(255,255,255,.10)" stroke-width="1"/>
+            <!-- bn group goes here -->
+            <g id="bnDots"></g>
+            <!-- center -->
+            <circle cx="0" cy="0" r="2.6" fill="#46ff9a" stroke="#020308" stroke-width="1"/>
+          </svg>
+        </div>
+
+        <div class="mini">
+          <div class="toggle" id="eyeModeToggle">
+            <button data-mode="unit" class="active">UNIT</button>
+            <button data-mode="spin">SPIN</button>
+            <button data-mode="pulse">PULSE</button>
+          </div>
+          <span class="pill">bn-points: <b id="bnCount">0</b></span>
+        </div>
+
+        <div class="eyeHint">
+          UNIT = normalized bn-points in [-1..1].<br>
+          SPIN = rotates the bn-field slowly (Eye drift).<br>
+          PULSE = intensity-driven breathing based on density.
+        </div>
+
+        <!-- Controls -->
+        <div class="controls" style="margin-top:10px">
+          <div class="row">
+            <label><span>Columns</span><span id="colsVal">32</span></label>
+            <input id="cols" type="range" min="8" max="96" value="32" />
+          </div>
+          <div class="row">
+            <label><span>Rows</span><span id="rowsVal">18</span></label>
+            <input id="rows" type="range" min="6" max="64" value="18" />
+          </div>
+          <div class="row">
+            <label><span>Cell Size</span><span id="cellVal">18</span></label>
+            <input id="cell" type="range" min="10" max="30" value="18" />
+          </div>
+          <div class="row">
+            <label><span>Threshold</span><span id="thrVal">0.50</span></label>
+            <input id="thr" type="range" min="0" max="100" value="50" />
+          </div>
+
+          <div class="row" style="grid-column:1 / -1">
+            <label><span>Pattern</span><span>Preset draw</span></label>
+            <select id="preset">
+              <option value="none">— none —</option>
+              <option value="diag">Diagonal</option>
+              <option value="smile">Smile (Eye-ish)</option>
+              <option value="ring">Ring</option>
+              <option value="noise">Noise</option>
+              <option value="word:BN">Word: BN</option>
+              <option value="word:2741">Word: 2741</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="btnbar">
+          <button id="scanBtn">Scan → bn</button>
+          <button class="secondary" id="clearBtn">Clear</button>
+          <button class="secondary" id="invertBtn">Invert</button>
+          <button class="secondary" id="exportBtn">Export JSON</button>
+          <button class="secondary" id="exportFSCBtn">Export FSC</button>
+          <button class="danger" id="resetBtn">Reset Grid</button>
+        </div>
+
+        <div class="stats">
+          <div class="stat"><div class="k">Active pixels</div><div class="v" id="activePx">0</div></div>
+          <div class="stat"><div class="k">COM (x,y)</div><div class="v" id="com">—</div></div>
+          <div class="stat"><div class="k">Symmetry (L↔R)</div><div class="v" id="sym">—</div></div>
+          <div class="stat"><div class="k">Density</div><div class="v" id="densVal">—</div></div>
+        </div>
+
+        <pre id="out">{ "hint": "Draw → Scan → bn-points & Eye-field update here." }</pre>
+      </div>
+    </div>
+  </aside>
+</main>
+
+<footer>
+  © Funebra™ • pScreen Eye Demo • <a href="../index.html">main</a> • <a href="./grid.html">grid demo</a>
+</footer>
+
+<script type="module">
+import { pScreenCore } from "../src/pScreen.core.js";
+import { pScreenScan } from "../src/pScreen.scan.js";
+import { pScreenBN }   from "../src/pScreen.bn.js";
+import { pScreenPresets } from "../src/pScreen.presets.js";
+
+const app = pScreenCore({ screen: document.getElementById("screen") });
+pScreenScan(app);
+pScreenBN(app);
+pScreenPresets(app);
+
+// FSC button
+document.getElementById("exportFSCBtn").addEventListener("click", () => {
+  app.scan?.();
+  app.bn?.downloadFSC?.("pscreen.fsc");
+});
+
+// --- Eye-field renderer ---
+const bnDots = document.getElementById("bnDots");
+const bnCountEl = document.getElementById("bnCount");
+const densValEl = document.getElementById("densVal");
+
+let eyeMode = "unit"; // unit | spin | pulse
+let spinT = 0;
+let raf = null;
+
+const toggle = document.getElementById("eyeModeToggle");
+toggle.addEventListener("click", (e)=>{
+  const b = e.target.closest("button");
+  if(!b) return;
+  eyeMode = b.dataset.mode;
+  [...toggle.querySelectorAll("button")].forEach(x=>x.classList.toggle("active", x===b));
+  renderEye(); // immediate refresh
+});
+
+function clearEye(){
+  bnDots.innerHTML = "";
+}
+
+function renderEye(){
+  cancelAnim();
+  clearEye();
+
+  const scan = app.lastScan || app.scan?.();
+  const pts = scan?.bnPoints || [];
+  bnCountEl.textContent = String(pts.length);
+
+  const dens = scan?.stats?.density ?? 0;
+  densValEl.textContent = (dens*100).toFixed(2) + "%";
+
+  if(!pts.length) return;
+
+  // normalize to unit space
+  const norm = app.bn.normalize(pts, { mode:"unit", useCOM:true, keepIds:true });
+
+  // render as svg dots
+  const frag = document.createDocumentFragment();
+
+  for(let i=0;i<norm.length;i++){
+    const p = norm[i];
+    const c = document.createElementNS("http://www.w3.org/2000/svg","circle");
+    c.setAttribute("cx", (p.x * 48).toFixed(2));
+    c.setAttribute("cy", (p.y * 48).toFixed(2));
+    c.setAttribute("r", "1.35");
+    c.setAttribute("fill", "rgba(21,182,255,0.90)");
+    c.setAttribute("stroke", "rgba(255,255,255,0.22)");
+    c.setAttribute("stroke-width", "0.25");
+    c.dataset.x = p.x;
+    c.dataset.y = p.y;
+    frag.appendChild(c);
+  }
+  bnDots.appendChild(frag);
+
+  if(eyeMode === "spin" || eyeMode === "pulse"){
+    startAnim(dens);
+  }
+}
+
+function startAnim(density){
+  const dots = bnDots.querySelectorAll("circle");
+  const basePulse = 1 + Math.min(0.55, density * 1.8);
+
+  function tick(){
+    spinT += 0.012;
+    const s = Math.sin(spinT);
+
+    const rot = eyeMode === "spin" ? spinT : (spinT * 0.35);
+    const pulse = eyeMode === "pulse" ? (1 + (s*0.25)*basePulse) : 1;
+
+    const cos = Math.cos(rot);
+    const sin = Math.sin(rot);
+
+    dots.forEach((d)=>{
+      const x = parseFloat(d.dataset.x);
+      const y = parseFloat(d.dataset.y);
+
+      // rotate
+      const xr = x*cos - y*sin;
+      const yr = x*sin + y*cos;
+
+      d.setAttribute("cx", (xr * 48).toFixed(2));
+      d.setAttribute("cy", (yr * 48).toFixed(2));
+      d.setAttribute("r", (1.25 * pulse).toFixed(2));
+      d.setAttribute("fill", `rgba(21,182,255,${0.70 + 0.25*(pulse-1)})`);
+    });
+
+    raf = requestAnimationFrame(tick);
+  }
+  raf = requestAnimationFrame(tick);
+}
+
+function cancelAnim(){
+  if(raf){
+    cancelAnimationFrame(raf);
+    raf = null;
+  }
+}
+
+// hook: update Eye view whenever Scan runs
+const oldScan = app.scan;
+app.scan = function(){
+  const payload = oldScan();
+  renderEye();
+  return payload;
+};
+
+// init render state
+renderEye();
+window.pScreen = app;
+</script>
+
+</body>
+</html>
 
