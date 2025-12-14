@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Funebra™ — Self-Describing Vision (v1)</title>
+<style>
+  :root{
+    --bg0:#04060a;
+    --bg1:#070b12;
+    --panel:#0b111b;
+    --edge:#152235;
+    --text:#e9f2ff;
+    --muted:#91a2bd;
+    --a:#00ffd0;
+    --b:#ff2a6d;
+    --c:#6aa7ff;
+    --shadow: 0 18px 60px rgba(0,0,0,.55);
+    --r:22px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;
+    color:var(--text);
+    background:
+      radial-gradient(1200px 700px at 20% -10%, rgba(0,255,208,.12), transparent 60%),
+      radial-gradient(900px 700px at 85% 0%, rgba(255,42,109,.10), transparent 60%),
+      radial-gradient(1000px 800px at 50% 120%, rgba(106,167,255,.10), transparent 60%),
+      linear-gradient(180deg, var(--bg1), var(--bg0) 60%, #000);
+    overflow-x:hidden;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:22px;display:flex;flex-direction:column;gap:16px}
+  header{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:16px 18px;border:1px solid var(--edge);border-radius:var(--r);
+    background:linear-gradient(180deg, rgba(11,17,27,.92), rgba(8,10,16,.70));
+    box-shadow:var(--shadow);
+    position:sticky;top:10px;backdrop-filter: blur(10px); z-index:5;
+  }
+  .brand{display:flex;align-items:center;gap:12px;min-width:260px}
+  .logo{
+    width:46px;height:46px;border-radius:14px;
+    background:
+      radial-gradient(circle at 35% 35%, rgba(0,255,208,.9), rgba(0,255,208,.15) 35%, transparent 60%),
+      radial-gradient(circle at 65% 60%, rgba(255,42,109,.85), rgba(255,42,109,.10) 40%, transparent 70%),
+      linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.02));
+    border:1px solid rgba(255,255,255,.14);
+    display:grid;place-items:center;
+    position:relative;
+  }
+  .logo:after{
+    content:"2741";
+    font-weight:800;letter-spacing:.12em;
+    font-size:10px;color:rgba(233,242,255,.85);
+    text-shadow:0 2px 12px rgba(0,0,0,.65);
+  }
+  .title h1{margin:0;font-size:1.05rem;letter-spacing:.08em;text-transform:uppercase}
+  .title p{margin:2px 0 0;color:var(--muted);font-size:.9rem}
+  .actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+  button, .pill{
+    border:1px solid rgba(255,255,255,.16);
+    background:linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04));
+    color:var(--text);
+    padding:9px 12px;border-radius:999px;
+    cursor:pointer; font-weight:650;
+    transition:transform .12s ease, filter .12s ease, border-color .12s ease;
+  }
+  button:hover{transform:translateY(-1px);filter:brightness(1.08);border-color:rgba(0,255,208,.35)}
+  button:active{transform:translateY(0px);filter:brightness(1.0)}
+  .pill{cursor:default}
+  .grid{
+    display:grid;
+    grid-template-columns: 1.2fr .8fr;
+    gap:16px;
+  }
+  @media (max-width:980px){ .grid{grid-template-columns:1fr} header{position:relative;top:auto} }
+  .card{
+    border:1px solid var(--edge);
+    background:linear-gradient(180deg, rgba(11,17,27,.86), rgba(6,8,12,.72));
+    border-radius:var(--r);
+    box-shadow:var(--shadow);
+    overflow:hidden;
+  }
+  .card .hd{
+    padding:16px 18px;
+    border-bottom:1px solid rgba(255,255,255,.08);
+    display:flex;align-items:flex-start;justify-content:space-between;gap:10px;
+  }
+  .card .hd h2{margin:0;font-size:1.05rem;letter-spacing:.02em}
+  .card .hd small{color:var(--muted)}
+  .card .bd{padding:16px 18px}
+  .mono{font-family: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace}
+  .kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  @media (max-width:620px){ .kpi{grid-template-columns:1fr} }
+  .kpi .box{
+    padding:12px 12px;border-radius:16px;
+    border:1px solid rgba(255,255,255,.10);
+    background:linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
+  }
+  .kpi .box b{display:block;font-size:1.05rem}
+  .kpi .box span{color:var(--muted);font-size:.9rem}
+  .row{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px}
+  .tag{
+    border:1px solid rgba(255,255,255,.14);
+    padding:7px 10px;border-radius:999px;
+    color:rgba(233,242,255,.92);
+    background:rgba(255,255,255,.05);
+    font-size:.9rem;
+  }
+  .tag i{font-style:normal;color:var(--muted)}
+  canvas{display:block;width:100%;height:320px;background:transparent}
+  .hint{color:var(--muted);font-size:.92rem;line-height:1.45}
+  .hr{height:1px;background:rgba(255,255,255,.08);margin:14px 0}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media (max-width:620px){ .two{grid-template-columns:1fr} }
+  .list{display:flex;flex-direction:column;gap:10px}
+  details{
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:16px;
+    background:rgba(255,255,255,.04);
+    overflow:hidden;
+  }
+  summary{
+    cursor:pointer;
+    padding:12px 12px;
+    list-style:none;
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    font-weight:700;
+  }
+  summary::-webkit-details-marker{display:none}
+  .d-body{padding:0 12px 12px;color:var(--muted);line-height:1.55}
+  .glow{
+    width:10px;height:10px;border-radius:50%;
+    background:var(--a);
+    box-shadow:0 0 18px rgba(0,255,208,.65);
+    margin-right:8px;display:inline-block;vertical-align:middle;
+  }
+  .footer{
+    padding:16px 18px;color:var(--muted);
+    border-top:1px solid rgba(255,255,255,.08);
+    font-size:.9rem;
+    display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;
+  }
+  a{color:rgba(0,255,208,.85);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .toast{
+    position:fixed;left:50%;bottom:18px;transform:translateX(-50%);
+    padding:10px 14px;border-radius:999px;
+    border:1px solid rgba(255,255,255,.16);
+    background:rgba(7,10,14,.75);backdrop-filter: blur(10px);
+    color:rgba(233,242,255,.92);
+    box-shadow:var(--shadow);
+    display:none;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand">
+      <div class="logo" aria-hidden="true"></div>
+      <div class="title">
+        <h1>Funebra™ Self-Describing Vision</h1>
+        <p>Vision that explains itself while running — Eye + Ear + bn-points</p>
+      </div>
+    </div>
+    <div class="actions">
+      <span class="pill mono" id="status">STATE: LIVE</span>
+      <button id="btnExplain">Explain this</button>
+      <button id="btnExport">Export JSON</button>
+      <button id="btnToggle">Toggle Dream Mode</button>
+    </div>
+  </header>
+
+  <div class="grid">
+
+    <!-- Left: Live canvas -->
+    <section class="card">
+      <div class="hd">
+        <div>
+          <h2><span class="glow"></span>Eye Canvas</h2>
+          <small>bn-points render the system while it narrates itself.</small>
+        </div>
+        <small class="mono" id="metaLine">eye=EYE2716 • ear=EAR27 • idprefix=bn</small>
+      </div>
+      <div class="bd">
+        <canvas id="cnv" width="1200" height="520"></canvas>
+        <div class="row">
+          <span class="tag">bn-points: <i id="bnCount">0</i></span>
+          <span class="tag">orbit: <i id="orbitMode">harmonic</i></span>
+          <span class="tag">tempo: <i id="tempo">96</i> bpm</span>
+          <span class="tag">emotion: <i id="emotion">calm</i></span>
+        </div>
+        <div class="hr"></div>
+        <div class="hint" id="selfDescribeLine">
+          This page is “self-describing”: it contains a readable declaration of what it is,
+          and a live renderer that proves the declaration by running.
+        </div>
+      </div>
+      <div class="footer">
+        <span class="mono">Funebra™ • Vision = Code = Geometry = Sound</span>
+        <span class="mono">v1 • pure DOM • no plugins</span>
+      </div>
+    </section>
+
+    <!-- Right: The self-description -->
+    <aside class="card">
+      <div class="hd">
+        <div>
+          <h2>Self-Description</h2>
+          <small>Readable “manifest” + machine-exportable schema.</small>
+        </div>
+        <small class="mono" id="clock">—</small>
+      </div>
+
+      <div class="bd">
+        <div class="kpi">
+          <div class="box">
+            <b class="mono" id="kVision">VISION: LIVE</b>
+            <span>Present execution, not future promise.</span>
+          </div>
+          <div class="box">
+            <b class="mono" id="kEye">EYE: 2716</b>
+            <span>Visual matrix / point-cloud logic.</span>
+          </div>
+          <div class="box">
+            <b class="mono" id="kEar">EAR: 27</b>
+            <span>Listening model / emotion vector.</span>
+          </div>
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="two">
+          <div>
+            <div class="hint"><b>Human-readable</b></div>
+            <div class="mono" style="white-space:pre-wrap" id="humanDesc"></div>
+          </div>
+          <div>
+            <div class="hint"><b>Machine-readable</b></div>
+            <div class="mono" style="white-space:pre-wrap" id="machineDesc"></div>
+          </div>
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="list">
+          <details open>
+            <summary><span>What makes it “self-describing”?</span><span class="mono">+</span></summary>
+            <div class="d-body">
+              The system contains its own identity (modules, ids, rules), keeps that identity in a JSON schema,
+              and actively renders it as bn-points. What it claims, it proves by running.
+            </div>
+          </details>
+
+          <details>
+            <summary><span>bn-points rule</span><span class="mono">+</span></summary>
+            <div class="d-body">
+              Every point instance is named with prefix <span class="mono">bn</span> (bn0, bn1, …).
+              A bn-point can display a symbol, act like a sprite, or behave like a data node.
+            </div>
+          </details>
+
+          <details>
+            <summary><span>Dream Mode</span><span class="mono">+</span></summary>
+            <div class="d-body">
+              Dream Mode changes orbit logic + narration tone. It’s the same identity,
+              with a different consciousness filter.
+            </div>
+          </details>
+        </div>
+      </div>
+
+      <div class="footer">
+        <span>Tip: click <span class="mono">Explain this</span> to cycle the narration.</span>
+        <span><a href="#" id="copyLink">Copy schema</a></span>
+      </div>
+    </aside>
+
+  </div>
+</div>
+
+<div class="toast mono" id="toast">Copied.</div>
+
+<script>
+/* ============================
+   FUNEBRA™ SELF-DESCRIBING CORE
+   ============================ */
+
+const Funebra = {
+  meta: {
+    brand: "Funebra™",
+    code: 2741,
+    vision: "LIVE",
+    modules: {
+      eye: "EYE2716",
+      ear: "EAR27",
+      pointPrefix: "bn"
+    },
+    rules: {
+      pointIdPrefix: "bn",
+      pointMayDisplaySymbolOrSprite: true,
+      pureDOM: true
+    }
+  },
+
+  state: {
+    dreamMode: false,
+    tempoBPM: 96,
+    emotion: "calm",
+    orbit: "harmonic",
+    narrationIndex: 0
+  },
+
+  // machine-readable schema (exported)
+  schema(){
+    return {
+      type: "funebra.selfdescribing",
+      version: "1.0.0",
+      timestamp: new Date().toISOString(),
+      meta: this.meta,
+      state: this.state,
+      description: {
+        short: "Vision that explains itself while running.",
+        long: [
+          "Funebra vision is live when the system both declares and executes its own identity.",
+          "bn-points render the declared rules as visible motion.",
+          "Eye and Ear are not metaphors; they are modules that map perception to structure."
+        ]
+      },
+      io: {
+        input: ["time", "tempo", "dreamMode toggle"],
+        output: ["bn-point field", "narration", "exportable schema"]
+      }
+    };
+  }
+};
+
+// --- UI refs
+const cnv = document.getElementById("cnv");
+const ctx = cnv.getContext("2d");
+
+const el = {
+  status: document.getElementById("status"),
+  bnCount: document.getElementById("bnCount"),
+  orbitMode: document.getElementById("orbitMode"),
+  tempo: document.getElementById("tempo"),
+  emotion: document.getElementById("emotion"),
+  clock: document.getElementById("clock"),
+  humanDesc: document.getElementById("humanDesc"),
+  machineDesc: document.getElementById("machineDesc"),
+  selfDescribeLine: document.getElementById("selfDescribeLine"),
+  toast: document.getElementById("toast"),
+};
+
+const narrations = [
+  "I am Funebra™: a system that describes itself and proves itself by running.",
+  "My bn-points are not decoration — they are identity made visible.",
+  "Eye watches patterns. Ear listens to change. Both become geometry.",
+  "Dream Mode is not escape — it is a new filter over the same truth.",
+  "Vision is live when execution is present, repeatable, and shareable."
+];
+
+// --- bn points generator (EYE2716-ish: 52×52 = 2704 + extras)
+function makeBNPoints(){
+  const points = [];
+  let id = 0;
+
+  // main grid
+  const cols = 52, rows = 52;
+  for(let y=0;y<rows;y++){
+    for(let x=0;x<cols;x++){
+      points.push({
+        id: Funebra.meta.modules.pointPrefix + (id++),
+        gx: x/(cols-1),
+        gy: y/(rows-1),
+        // per-point "charge" (size modulation)
+        q: Math.sin(x*0.33) * Math.cos(y*0.29)
+      });
+    }
+  }
+
+  // add 12 "sentinel" points to reach 2716 vibe
+  for(let k=0;k<12;k++){
+    points.push({
+      id: Funebra.meta.modules.pointPrefix + (id++),
+      gx: 0.5 + 0.45*Math.cos(k/12*Math.PI*2),
+      gy: 0.5 + 0.45*Math.sin(k/12*Math.PI*2),
+      q: 1
+    });
+  }
+
+  return points;
+}
+
+const BN = makeBNPoints();
+el.bnCount.textContent = BN.length;
+
+// --- render helpers
+function fitCanvasToCSS(){
+  const rect = cnv.getBoundingClientRect();
+  const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+  cnv.width = Math.floor(rect.width * dpr);
+  cnv.height = Math.floor(rect.height * dpr);
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+
+function clamp(v,a,b){ return Math.max(a, Math.min(b,v)); }
+
+function draw(t){
+  const w = cnv.getBoundingClientRect().width;
+  const h = cnv.getBoundingClientRect().height;
+
+  // background wash
+  ctx.clearRect(0,0,w,h);
+  ctx.fillStyle = "rgba(0,0,0,0.18)";
+  ctx.fillRect(0,0,w,h);
+
+  // center and scaling
+  const cx = w/2, cy = h/2;
+  const time = t*0.001;
+  const tempo = Funebra.state.tempoBPM;
+
+  // orbit coefficients
+  const dream = Funebra.state.dreamMode ? 1 : 0;
+  const wobble = Funebra.state.dreamMode ? 1.7 : 1.0;
+  const spin = (tempo/96) * (0.25 + 0.35*dream);
+
+  // color logic (no hard dependency on theme)
+  function colorFor(q, k){
+    // q in [-1,1]
+    const a = 0.35 + 0.45*(0.5+0.5*q);
+    const hue = Funebra.state.dreamMode ? (300 + 60*q) : (165 + 50*q);
+    return `hsla(${hue}, 95%, 68%, ${a})`;
+  }
+
+  // draw bn points
+  const gridScale = Math.min(w,h) * 0.84;
+
+  for(let i=0;i<BN.length;i++){
+    const p = BN[i];
+    const q = p.q;
+
+    // base position from grid
+    let x = (p.gx - 0.5) * gridScale;
+    let y = (p.gy - 0.5) * gridScale;
+
+    // orbit transform (harmonic vs dream)
+    const r = Math.hypot(x,y) / (gridScale*0.5);
+    const ang = Math.atan2(y,x);
+
+    const pulse = Math.sin(time*2.0 + r*6.0) * 0.5 + 0.5;
+    const drift = Math.sin(time*(1.6*wobble) + ang*4.0) * 0.25;
+
+    // rotate + breathe
+    const a = ang + time*(spin) + drift*(0.9 + dream);
+    const rr = r * (1.0 + 0.06*Math.sin(time*3.0 + r*10.0));
+
+    // back to cartesian
+    x = Math.cos(a) * rr * gridScale*0.5;
+    y = Math.sin(a) * rr * gridScale*0.5;
+
+    // size modulation
+    const base = 1.0 + 1.25*(0.5+0.5*q);
+    const size = clamp(base + 2.1*pulse + 1.1*dream*pulse, 0.8, 6.2);
+
+    // draw
+    ctx.beginPath();
+    ctx.fillStyle = colorFor(q, i);
+    ctx.arc(cx + x, cy + y, size, 0, Math.PI*2);
+    ctx.fill();
+  }
+
+  // HUD ring
+  ctx.beginPath();
+  ctx.strokeStyle = Funebra.state.dreamMode ? "rgba(255,42,109,.25)" : "rgba(0,255,208,.22)";
+  ctx.lineWidth = 2;
+  ctx.arc(cx, cy, Math.min(w,h)*0.38, 0, Math.PI*2);
+  ctx.stroke();
+
+  requestAnimationFrame(draw);
+}
+
+// --- self-description renderer
+function renderDescriptions(){
+  const s = Funebra.schema();
+
+  const human =
+`IDENTITY
+- brand: ${s.meta.brand}
+- code: ${s.meta.code}
+- modules: eye=${s.meta.modules.eye}, ear=${s.meta.modules.ear}
+- point ids: "${s.meta.modules.pointPrefix}0 … ${s.meta.modules.pointPrefix}${BN.length-1}"
+
+MEANING
+- Vision is LIVE when declaration + execution happen now.
+- bn-points are the proof layer: what is claimed becomes visible.
+- Eye renders structure; Ear maps emotion → parameters.
+
+CURRENT STATE
+- dreamMode: ${s.state.dreamMode}
+- tempoBPM: ${s.state.tempoBPM}
+- emotion: ${s.state.emotion}
+- orbit: ${s.state.orbit}`;
+
+  el.humanDesc.textContent = human;
+  el.machineDesc.textContent = JSON.stringify(s, null, 2);
+
+  el.status.textContent = "STATE: " + (Funebra.state.dreamMode ? "DREAM/LIVE" : "LIVE");
+  el.orbitMode.textContent = Funebra.state.orbit;
+  el.tempo.textContent = Funebra.state.tempoBPM;
+  el.emotion.textContent = Funebra.state.emotion;
+}
+
+function setClock(){
+  const d = new Date();
+  el.clock.textContent = d.toLocaleString();
+}
+setInterval(setClock, 1000);
+setClock();
+
+// --- narration cycle
+function cycleNarration(){
+  Funebra.state.narrationIndex = (Funebra.state.narrationIndex + 1) % narrations.length;
+  el.selfDescribeLine.textContent = narrations[Funebra.state.narrationIndex];
+}
+
+// --- toast
+let toastTimer=null;
+function toast(msg){
+  el.toast.textContent = msg;
+  el.toast.style.display = "block";
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=> el.toast.style.display="none", 1400);
+}
+
+// --- actions
+document.getElementById("btnExplain").addEventListener("click", ()=>{
+  cycleNarration();
+});
+
+document.getElementById("btnToggle").addEventListener("click", ()=>{
+  Funebra.state.dreamMode = !Funebra.state.dreamMode;
+  Funebra.state.orbit = Funebra.state.dreamMode ? "dream" : "harmonic";
+  Funebra.state.emotion = Funebra.state.dreamMode ? "lucid" : "calm";
+  renderDescriptions();
+  toast(Funebra.state.dreamMode ? "Dream Mode ON" : "Dream Mode OFF");
+});
+
+document.getElementById("btnExport").addEventListener("click", async ()=>{
+  const data = Funebra.schema();
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+
+  // auto-download
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "funebra-self-describing-schema.json";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+
+  setTimeout(()=> URL.revokeObjectURL(url), 1000);
+  toast("Exported schema JSON");
+});
+
+document.getElementById("copyLink").addEventListener("click", async (e)=>{
+  e.preventDefault();
+  const text = JSON.stringify(Funebra.schema(), null, 2);
+  try{
+    await navigator.clipboard.writeText(text);
+    toast("Schema copied");
+  }catch{
+    // fallback
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    ta.remove();
+    toast("Schema copied");
+  }
+});
+
+// --- init
+function init(){
+  // set defaults
+  el.bnCount.textContent = BN.length;
+  el.tempo.textContent = Funebra.state.tempoBPM;
+  el.emotion.textContent = Funebra.state.emotion;
+  el.orbitMode.textContent = Funebra.state.orbit;
+
+  // first line
+  el.selfDescribeLine.textContent = narrations[0];
+
+  // keep descriptions fresh
+  renderDescriptions();
+
+  // resize handling
+  const resize = ()=>{
+    fitCanvasToCSS();
+  };
+  window.addEventListener("resize", resize);
+  resize();
+
+  // subtle auto narration every ~8s
+  setInterval(()=> {
+    // only auto-cycle when not interacting heavily
+    cycleNarration();
+  }, 8200);
+
+  requestAnimationFrame(draw);
+}
+init();
+</script>
+</body>
+</html>
