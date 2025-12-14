@@ -408,18 +408,16 @@
 import { pScreenCore } from "./src/pScreen.core.js";
 import { pScreenScan } from "./src/pScreen.scan.js";
 import { pScreenBN }   from "./src/pScreen.bn.js";
+import { pScreenPresets } from "./src/pScreen.presets.js";
 
-/* Boot sequence */
-const app = pScreenCore({
-  screen: document.getElementById("screen")
-});
-
+const app = pScreenCore({ screen: document.getElementById("screen") });
 pScreenScan(app);
 pScreenBN(app);
+pScreenPresets(app);
 
-/* Expose for console / demos */
 window.pScreen = app;
 </script>
+
 
 </body>
 </html>
