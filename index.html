@@ -1,1 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<title>Funebra™ pScreen — Pure DOM Pixel Scanner</title>
+
+<!-- Basic SEO -->
+<meta name="description" content="Funebra™ pScreen is a pure DOM pixel-screen scanner that transforms grids and visuals into bn-point data for mathematical, musical, and perceptual analysis." />
+<meta name="keywords" content="Funebra, pScreen, bn-points, pixel scanner, DOM grid, math art, generative art, Eye27, Ear27, perception engine" />
+<meta name="author" content="Peter M. Lugha — Funebra™" />
+<meta name="robots" content="index, follow" />
+
+<!-- Open Graph (Facebook, LinkedIn, etc.) -->
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Funebra™ pScreen — Pure DOM Pixel Scanner" />
+<meta property="og:description" content="A Funebra™ perception engine that scans pixel grids into bn-point data using pure DOM — no canvas, no plugins." />
+<meta property="og:url" content="https://funebra.github.io/pScreen/" />
+<meta property="og:image" content="https://funebra.github.io/pScreen/og.png" />
+<meta property="og:site_name" content="Funebra™" />
+
+<!-- Twitter / X -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Funebra™ pScreen — Pure DOM Pixel Scanner" />
+<meta name="twitter:description" content="Scan pixel grids into bn-points. Pure DOM. Math-art. Perception research." />
+<meta name="twitter:image" content="https://funebra.github.io/pScreen/og.png" />
+
+<!-- Theme / UI -->
+<meta name="theme-color" content="#06080b" />
+<meta name="color-scheme" content="dark" />
+
+<!-- Funebra identity -->
+<meta name="application-name" content="Funebra™ pScreen" />
+<meta name="generator" content="Funebra™ System" />
+
+<style>
+  :root{
+    --bg:#06080b;
+    --panel:#0b0f15;
+    --ink:#e8eef6;
+    --muted:#93a4b8;
+    --line:rgba(255,255,255,.10);
+    --accent:#15b6ff;
+    --good:#46ff9a;
+    --warn:#ffd166;
+    --bad:#ff4d6d;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    background:radial-gradient(1200px 700px at 30% 0%, rgba(21,182,255,.18), transparent 55%),
+               radial-gradient(900px 600px at 70% 100%, rgba(70,255,154,.12), transparent 55%),
+               var(--bg);
+    color:var(--ink);
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+  }
+  header{
+    padding:18px 18px 10px;
+    border-bottom:1px solid var(--line);
+    background:linear-gradient(to bottom, rgba(255,255,255,.06), transparent);
+  }
+  .topline{
+    display:flex;
+    gap:12px;
+    align-items:baseline;
+    flex-wrap:wrap;
+  }
+  h1{
+    margin:0;
+    font-size:18px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+  }
+  .tag{
+    color:var(--muted);
+    font-size:13px;
+  }
+  .layout{
+    display:grid;
+    grid-template-columns: 1.1fr .9fr;
+    gap:14px;
+    padding:14px;
+    width:min(1200px, 100%);
+    margin:0 auto;
+    flex:1;
+  }
+  @media (max-width: 980px){
+    .layout{grid-template-columns:1fr}
+  }
+  .card{
+    background:rgba(11,15,21,.82);
+    border:1px solid var(--line);
+    border-radius:18px;
+    overflow:hidden;
+    box-shadow:0 14px 40px rgba(0,0,0,.35);
+  }
+  .card .hd{
+    padding:12px 14px;
+    border-bottom:1px solid var(--line);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+  }
+  .card .hd b{letter-spacing:.04em}
+  .card .bd{padding:14px}
+  .controls{
+    display:grid;
+    grid-template-columns: repeat(2, minmax(0,1fr));
+    gap:10px;
+  }
+  .controls .row{
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:10px;
+    background:rgba(255,255,255,.03);
+  }
+  .row label{
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    font-size:12px;
+    color:var(--muted);
+    margin-bottom:6px;
+  }
+  input[type="range"]{width:100%}
+  input[type="number"], select, input[type="text"]{
+    width:100%;
+    border-radius:12px;
+    border:1px solid var(--line);
+    background:rgba(0,0,0,.25);
+    color:var(--ink);
+    padding:8px 10px;
+    outline:none;
+  }
+  .btnbar{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-top:12px;
+  }
+  button{
+    border:none;
+    border-radius:999px;
+    padding:10px 14px;
+    font-weight:700;
+    cursor:pointer;
+    color:#041015;
+    background:var(--accent);
+    box-shadow:0 10px 22px rgba(21,182,255,.25);
+  }
+  button.secondary{
+    background:rgba(255,255,255,.08);
+    color:var(--ink);
+    border:1px solid var(--line);
+    box-shadow:none;
+  }
+  button.danger{
+    background:var(--bad);
+    color:#16050a;
+  }
+  button:active{transform:translateY(1px)}
+  .gridWrap{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .meta{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    color:var(--muted);
+    font-size:12px;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .pill{
+    border:1px solid var(--line);
+    border-radius:999px;
+    padding:6px 10px;
+    background:rgba(255,255,255,.04);
+  }
+
+  /* The actual pure DOM pixel-grid */
+  #screen{
+    --cols: 32;
+    --rows: 18;
+    --cell: 18px;
+
+    display:grid;
+    grid-template-columns: repeat(var(--cols), var(--cell));
+    grid-template-rows: repeat(var(--rows), var(--cell));
+    gap:2px;
+    padding:12px;
+    border-radius:18px;
+    border:1px solid var(--line);
+    background:rgba(0,0,0,.35);
+    user-select:none;
+    touch-action:none;
+    place-content:center;
+    overflow:auto;
+  }
+  .px{
+    width:var(--cell);
+    height:var(--cell);
+    border-radius:6px;
+    background:rgba(255,255,255,.03);
+    border:1px solid rgba(255,255,255,.06);
+    position:relative;
+  }
+  .px.on{
+    background:rgba(21,182,255,.22);
+    border-color:rgba(21,182,255,.42);
+    box-shadow: inset 0 0 0 1px rgba(21,182,255,.25);
+  }
+  .px.on::after{
+    content:"";
+    position:absolute;
+    inset:3px;
+    border-radius:5px;
+    background:rgba(21,182,255,.35);
+  }
+  .px.hit{
+    outline:2px solid rgba(70,255,154,.65);
+    outline-offset:1px;
+  }
+
+  .stats{
+    display:grid;
+    grid-template-columns: repeat(2, minmax(0,1fr));
+    gap:10px;
+  }
+  .stat{
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:10px;
+    background:rgba(255,255,255,.03);
+  }
+  .stat .k{color:var(--muted);font-size:12px}
+  .stat .v{font-size:18px;font-weight:800;margin-top:2px}
+  pre{
+    margin:0;
+    padding:10px;
+    border-radius:14px;
+    border:1px solid var(--line);
+    background:rgba(0,0,0,.35);
+    overflow:auto;
+    max-height:220px;
+    font-size:12px;
+    color:#dbe7f6;
+  }
+  .smallnote{
+    font-size:12px;
+    color:var(--muted);
+    line-height:1.4;
+    margin-top:10px;
+  }
+  footer{
+    padding:12px 16px;
+    color:var(--muted);
+    font-size:12px;
+    border-top:1px solid var(--line);
+    text-align:center;
+  }
+  a{color:var(--accent); text-decoration:none}
+  a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="topline">
+    <h1>Funebra™ pScreen</h1>
+    <div class="tag">Pure DOM pixel-screen scanner demo → bn-points</div>
+  </div>
+</header>
+
+<main class="layout">
+  <!-- LEFT: Screen -->
+  <section class="card">
+    <div class="hd">
+      <b>pScreen Surface</b>
+      <div class="meta">
+        <span class="pill" id="modePill">Mode: Paint</span>
+        <span class="pill" id="coordPill">x: —  y: —</span>
+      </div>
+    </div>
+    <div class="bd">
+      <div class="gridWrap">
+        <div id="screen" aria-label="pScreen pixel grid"></div>
+
+        <div class="meta">
+          <span class="pill">Tip: drag to paint • Shift = erase • Ctrl = invert cell</span>
+          <span class="pill" id="densityPill">Density: —%</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- RIGHT: Controls + Scanner Output -->
+  <aside class="card">
+    <div class="hd">
+      <b>Scanner Controls</b>
+      <span class="tag">pScreen → bn-points</span>
+    </div>
+    <div class="bd">
+      <div class="controls">
+        <div class="row">
+          <label>
+            <span>Columns</span>
+            <span id="colsVal">32</span>
+          </label>
+          <input id="cols" type="range" min="8" max="96" value="32" />
+        </div>
+
+        <div class="row">
+          <label>
+            <span>Rows</span>
+            <span id="rowsVal">18</span>
+          </label>
+          <input id="rows" type="range" min="6" max="64" value="18" />
+        </div>
+
+        <div class="row">
+          <label>
+            <span>Cell Size</span>
+            <span id="cellVal">18</span>
+          </label>
+          <input id="cell" type="range" min="10" max="30" value="18" />
+        </div>
+
+        <div class="row">
+          <label>
+            <span>Threshold (0..1)</span>
+            <span id="thrVal">0.50</span>
+          </label>
+          <input id="thr" type="range" min="0" max="100" value="50" />
+        </div>
+
+        <div class="row" style="grid-column:1 / -1">
+          <label>
+            <span>Pattern</span>
+            <span>Preset draw</span>
+          </label>
+          <select id="preset">
+            <option value="none">— none —</option>
+            <option value="diag">Diagonal</option>
+            <option value="smile">Smile (Eye-ish)</option>
+            <option value="ring">Ring</option>
+            <option value="noise">Noise</option>
+            <option value="word:BN">Word: BN</option>
+            <option value="word:2741">Word: 2741</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="btnbar">
+        <button id="scanBtn">Scan → bn</button>
+        <button class="secondary" id="clearBtn">Clear</button>
+        <button class="secondary" id="invertBtn">Invert</button>
+        <button class="secondary" id="exportBtn">Export JSON</button>
+        <button class="danger" id="resetBtn">Reset Grid</button>
+      </div>
+
+      <div style="height:12px"></div>
+
+      <div class="stats">
+        <div class="stat">
+          <div class="k">Active pixels</div>
+          <div class="v" id="activePx">0</div>
+        </div>
+        <div class="stat">
+          <div class="k">bn-points</div>
+          <div class="v" id="bnCount">0</div>
+        </div>
+        <div class="stat">
+          <div class="k">Center of mass (x,y)</div>
+          <div class="v" id="com">—</div>
+        </div>
+        <div class="stat">
+          <div class="k">Symmetry (L↔R)</div>
+          <div class="v" id="sym">—</div>
+        </div>
+      </div>
+
+      <div style="height:12px"></div>
+
+      <pre id="out" aria-label="Scanner output JSON"></pre>
+
+      <div class="smallnote">
+        pScreen demo is <b>pure DOM</b>: each cell is a div.
+        Scan converts ON-cells into <b>bn*</b> point instances (Funebra point IDs).
+        You can wire this output into Eye2716/Ear27 later.
+      </div>
+    </div>
+  </aside>
+</main>
+
+<footer>
+  © Funebra™ • pScreen demo • Pure DOM scanner • <a href="https://funebra.github.io" target="_blank" rel="noopener">funebra.github.io</a>
+</footer>
+
+<script>
+/* -----------------------------------------------------------
+   Funebra™ pScreen — Pure DOM Pixel Scanner Demo (index.html)
+   - Each cell is a DOM element (.px)
+   - "Scan" builds bn-point array with ids bn0..bnN
+   - Includes: density, center-of-mass, L/R symmetry score
+   - Presets: diag, smile, ring, noise, word:BN, word:2741
+----------------------------------------------------------- */
+
+const el = (id)=>document.getElementById(id);
+
+const screen = el("screen");
+const colsR = el("cols"), rowsR = el("rows"), cellR = el("cell"), thrR = el("thr");
+const colsVal = el("colsVal"), rowsVal = el("rowsVal"), cellVal = el("cellVal"), thrVal = el("thrVal");
+const preset = el("preset");
+
+const scanBtn = el("scanBtn"), clearBtn = el("clearBtn"), invertBtn = el("invertBtn");
+const exportBtn = el("exportBtn"), resetBtn = el("resetBtn");
+
+const out = el("out");
+const activePx = el("activePx");
+const bnCount = el("bnCount");
+const comEl = el("com");
+const symEl = el("sym");
+const densityPill = el("densityPill");
+const coordPill = el("coordPill");
+const modePill = el("modePill");
+
+let state = {
+  cols: +colsR.value,
+  rows: +rowsR.value,
+  cell: +cellR.value,
+  threshold: +thrR.value / 100,
+  // pixels store 0..1 intensity (for future image sampling); here we do 0 or 1
+  px: []
+};
+
+let isDown = false;
+let paintMode = "paint"; // paint | erase
+let lastIndex = -1;
+
+function idx(x,y){ return y*state.cols + x; }
+function xy(i){ return [i % state.cols, Math.floor(i/state.cols)]; }
+
+function setCSSGrid(){
+  screen.style.setProperty("--cols", state.cols);
+  screen.style.setProperty("--rows", state.rows);
+  screen.style.setProperty("--cell", state.cell + "px");
+}
+
+function buildGrid(keep=false){
+  setCSSGrid();
+  const total = state.cols * state.rows;
+
+  if(!keep || state.px.length !== total){
+    state.px = new Array(total).fill(0);
+  }
+
+  screen.innerHTML = "";
+  const frag = document.createDocumentFragment();
+  for(let i=0;i<total;i++){
+    const d = document.createElement("div");
+    d.className = "px";
+    d.dataset.i = i;
+    frag.appendChild(d);
+  }
+  screen.appendChild(frag);
+  paintToDOM();
+  updateMeta();
+}
+
+function paintToDOM(){
+  const nodes = screen.children;
+  for(let i=0;i<nodes.length;i++){
+    const on = state.px[i] >= state.threshold ? 1 : 0;
+    nodes[i].classList.toggle("on", !!on);
+  }
+}
+
+function setCell(i, v){
+  if(i<0 || i>=state.px.length) return;
+  state.px[i] = v ? 1 : 0;
+  const node = screen.children[i];
+  if(node){
+    node.classList.toggle("on", v >= state.threshold);
+    node.classList.add("hit");
+    setTimeout(()=>node.classList.remove("hit"), 90);
+  }
+}
+
+function toggleCell(i){
+  setCell(i, state.px[i] ? 0 : 1);
+}
+
+function clearAll(){
+  state.px.fill(0);
+  paintToDOM();
+  updateMeta();
+}
+
+function invertAll(){
+  for(let i=0;i<state.px.length;i++){
+    state.px[i] = state.px[i] ? 0 : 1;
+  }
+  paintToDOM();
+  updateMeta();
+}
+
+function updateMeta(){
+  const total = state.px.length;
+  const active = state.px.reduce((a,b)=>a + (b>=state.threshold?1:0), 0);
+  const density = total ? (active/total)*100 : 0;
+  activePx.textContent = active;
+  densityPill.textContent = `Density: ${density.toFixed(2)}%`;
+}
+
+function setModeFromEvent(e){
+  // Shift => erase, else paint; Ctrl => invert single cell on drag
+  paintMode = e.shiftKey ? "erase" : "paint";
+  modePill.textContent = "Mode: " + (paintMode==="erase" ? "Erase" : "Paint");
+}
+
+function handlePointerAt(target, e){
+  if(!target || !target.classList.contains("px")) return;
+  const i = +target.dataset.i;
+  if(i === lastIndex) return;
+  lastIndex = i;
+
+  const [x,y] = xy(i);
+  coordPill.textContent = `x: ${x}  y: ${y}`;
+
+  if(e.ctrlKey){
+    toggleCell(i);
+  }else{
+    setCell(i, paintMode==="paint" ? 1 : 0);
+  }
+  updateMeta();
+}
+
+screen.addEventListener("pointerdown", (e)=>{
+  isDown = true;
+  lastIndex = -1;
+  screen.setPointerCapture(e.pointerId);
+  setModeFromEvent(e);
+  handlePointerAt(e.target, e);
+});
+screen.addEventListener("pointermove", (e)=>{
+  if(!isDown) return;
+  setModeFromEvent(e);
+  handlePointerAt(e.target, e);
+});
+screen.addEventListener("pointerup", ()=>{
+  isDown = false;
+  lastIndex = -1;
+});
+
+screen.addEventListener("mousemove", (e)=>{
+  const t = e.target;
+  if(t && t.classList.contains("px")){
+    const i = +t.dataset.i;
+    const [x,y] = xy(i);
+    coordPill.textContent = `x: ${x}  y: ${y}`;
+  }
+});
+
+function scanToBN(){
+  const bn = [];
+  const total = state.px.length;
+  let sx=0, sy=0, count=0;
+
+  for(let i=0;i<total;i++){
+    const val = state.px[i];
+    if(val >= state.threshold){
+      const [x,y] = xy(i);
+      // bn ids always "bnN" (Funebra memory)
+      bn.push({
+        id: "bn" + bn.length,
+        x, y,
+        v: val,
+        // easy mapping into a screen plane later:
+        // pxX: x*state.cell, pxY: y*state.cell
+      });
+      sx += x;
+      sy += y;
+      count++;
+    }
+  }
+
+  // Center of mass
+  const cx = count ? (sx/count) : 0;
+  const cy = count ? (sy/count) : 0;
+
+  // Simple left-right symmetry: compare mirrored cells
+  const sym = symmetryLR();
+
+  bnCount.textContent = bn.length;
+  comEl.textContent = count ? `${cx.toFixed(2)}, ${cy.toFixed(2)}` : "—";
+  symEl.textContent = count ? `${(sym*100).toFixed(1)}%` : "—";
+
+  const payload = {
+    meta:{
+      engine:"Funebra™ pScreen",
+      mode:"pure-dom",
+      cols: state.cols,
+      rows: state.rows,
+      cell: state.cell,
+      threshold: state.threshold,
+      timestamp: new Date().toISOString()
+    },
+    stats:{
+      activePixels: count,
+      density: total ? count/total : 0,
+      centerOfMass:{x: cx, y: cy},
+      symmetryLR: sym
+    },
+    bnPoints: bn
+  };
+
+  out.textContent = JSON.stringify(payload, null, 2);
+  return payload;
+}
+
+function symmetryLR(){
+  // 1.0 = perfect symmetry. Compare L and mirrored R for each row.
+  const C = state.cols, R = state.rows;
+  if(C < 2) return 1;
+
+  let matches = 0, checks = 0;
+  const thr = state.threshold;
+
+  for(let y=0;y<R;y++){
+    for(let x=0;x<Math.floor(C/2);x++){
+      const a = state.px[idx(x,y)] >= thr;
+      const b = state.px[idx(C-1-x,y)] >= thr;
+      checks++;
+      if(a === b) matches++;
+    }
+  }
+  return checks ? (matches/checks) : 1;
+}
+
+/* ---------------- Presets ---------------- */
+
+function applyPreset(kind){
+  clearAll();
+
+  const C = state.cols, R = state.rows;
+  const midX = (C-1)/2, midY = (R-1)/2;
+
+  const set = (x,y)=>{ if(x>=0 && x<C && y>=0 && y<R) state.px[idx(x,y)] = 1; };
+
+  if(kind === "diag"){
+    const n = Math.min(C,R);
+    for(let i=0;i<n;i++) set(i,i);
+  }
+
+  if(kind === "smile"){
+    // Eye-ish smile grid: two eyes + curved mouth
+    // eyes
+    set(Math.floor(C*0.30), Math.floor(R*0.35));
+    set(Math.floor(C*0.70), Math.floor(R*0.35));
+    // mouth arc
+    for(let x=0;x<C;x++){
+      const dx = (x-midX)/(C/2);
+      const y = Math.round(midY + (dx*dx)* (R*0.18));
+      if(y>=0 && y<R) set(x, y);
+    }
+    // cheeks
+    set(Math.floor(C*0.22), Math.floor(R*0.55));
+    set(Math.floor(C*0.78), Math.floor(R*0.55));
+  }
+
+  if(kind === "ring"){
+    const rad = Math.min(C,R)*0.33;
+    for(let y=0;y<R;y++){
+      for(let x=0;x<C;x++){
+        const dx = x-midX, dy = y-midY;
+        const d = Math.sqrt(dx*dx + dy*dy);
+        if(Math.abs(d - rad) < 0.6) set(x,y);
+      }
+    }
+  }
+
+  if(kind === "noise"){
+    for(let i=0;i<state.px.length;i++){
+      state.px[i] = (Math.random() > 0.75) ? 1 : 0;
+    }
+  }
+
+  if(kind.startsWith("word:")){
+    const word = kind.split(":")[1] || "BN";
+    drawWord(word);
+  }
+
+  paintToDOM();
+  updateMeta();
+}
+
+function drawWord(text){
+  // Minimal 5x7 bitmap font (only what we need)
+  const font = {
+    "B":[
+      "11110",
+      "10001",
+      "11110",
+      "10001",
+      "10001",
+      "10001",
+      "11110",
+    ],
+    "N":[
+      "10001",
+      "11001",
+      "10101",
+      "10011",
+      "10001",
+      "10001",
+      "10001",
+    ],
+    "2":[
+      "11110",
+      "00001",
+      "00001",
+      "11110",
+      "10000",
+      "10000",
+      "11111",
+    ],
+    "7":[
+      "11111",
+      "00001",
+      "00010",
+      "00100",
+      "01000",
+      "01000",
+      "01000",
+    ],
+    "4":[
+      "10010",
+      "10010",
+      "10010",
+      "11111",
+      "00010",
+      "00010",
+      "00010",
+    ],
+    "1":[
+      "00100",
+      "01100",
+      "00100",
+      "00100",
+      "00100",
+      "00100",
+      "01110",
+    ]
+  };
+
+  const C = state.cols, R = state.rows;
+  const chars = (""+text).toUpperCase().split("").filter(c=>font[c]);
+  if(!chars.length) return;
+
+  const charW = 5, charH = 7, gap = 1;
+  const totalW = chars.length*charW + (chars.length-1)*gap;
+  const startX = Math.floor((C - totalW)/2);
+  const startY = Math.floor((R - charH)/2);
+
+  const set = (x,y)=>{ if(x>=0 && x<C && y>=0 && y<R) state.px[idx(x,y)] = 1; };
+
+  let x0 = startX;
+  for(const ch of chars){
+    const bmp = font[ch];
+    for(let y=0;y<charH;y++){
+      for(let x=0;x<charW;x++){
+        if(bmp[y][x] === "1") set(x0+x, startY+y);
+      }
+    }
+    x0 += charW + gap;
+  }
+}
+
+/* ---------------- Wiring UI ---------------- */
+
+function syncUI(){
+  colsVal.textContent = state.cols;
+  rowsVal.textContent = state.rows;
+  cellVal.textContent = state.cell;
+  thrVal.textContent = state.threshold.toFixed(2);
+}
+
+colsR.addEventListener("input", ()=>{
+  state.cols = +colsR.value;
+  syncUI();
+});
+rowsR.addEventListener("input", ()=>{
+  state.rows = +rowsR.value;
+  syncUI();
+});
+cellR.addEventListener("input", ()=>{
+  state.cell = +cellR.value;
+  syncUI();
+  setCSSGrid();
+});
+thrR.addEventListener("input", ()=>{
+  state.threshold = +thrR.value / 100;
+  syncUI();
+  paintToDOM();
+  updateMeta();
+});
+
+colsR.addEventListener("change", ()=>buildGrid(true));
+rowsR.addEventListener("change", ()=>buildGrid(true));
+
+preset.addEventListener("change", ()=>{
+  const v = preset.value;
+  if(v !== "none") applyPreset(v);
+  preset.value = "none";
+});
+
+scanBtn.addEventListener("click", scanToBN);
+clearBtn.addEventListener("click", ()=>{
+  clearAll();
+  out.textContent = "";
+  bnCount.textContent = "0";
+  comEl.textContent = "—";
+  symEl.textContent = "—";
+});
+invertBtn.addEventListener("click", ()=>{
+  invertAll();
+  out.textContent = "";
+});
+resetBtn.addEventListener("click", ()=>{
+  // full rebuild to defaults (keeps current slider values)
+  buildGrid(false);
+  out.textContent = "";
+  bnCount.textContent = "0";
+  comEl.textContent = "—";
+  symEl.textContent = "—";
+});
+
+exportBtn.addEventListener("click", ()=>{
+  const payload = scanToBN();
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "pscreen-bn-scan.json";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 1000);
+});
+
+/* init */
+syncUI();
+buildGrid(false);
+out.textContent =
+`{
+  "meta": { "engine": "Funebra™ pScreen", "mode": "pure-dom" },
+  "hint": "Draw on the grid → click Scan → bn-points appear here."
+}`;
+updateMeta();
+</script>
+</body>
+</html>
 
